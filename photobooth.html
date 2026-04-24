@@ -41,6 +41,7 @@ video{
   width:100%;
   height:280px;
   object-fit:cover;
+  transform: scaleX(-1);
 }
 
 .status{
@@ -97,9 +98,9 @@ canvas{
   margin-top:15px;
   border-radius:20px;
 }
-
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -125,7 +126,8 @@ canvas{
     <button class="btn download" onclick="download()">⬇️ SIMPAN</button>
   </div>
 
-  <canvas id="canvas" width="360" height="640"></canvas>
+  <!-- 🔥 CANVAS SUDAH DIPANJANGKAN -->
+  <canvas id="canvas" width="360" height="920"></canvas>
 </div>
 
 <script>
@@ -140,17 +142,17 @@ navigator.mediaDevices.getUserMedia({ video:{ facingMode:"user" }})
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
 function drawBackground(){
-  let g = ctx.createLinearGradient(0,0,0,640);
+  let g = ctx.createLinearGradient(0,0,0,canvas.height);
   g.addColorStop(0,'#ffc1d6');
   g.addColorStop(1,'#ff8fb1');
   ctx.fillStyle=g;
-  ctx.fillRect(0,0,360,640);
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
   ctx.font='20px Arial';
   ctx.fillText('🌸',10,80);
   ctx.fillText('🌸',320,150);
   ctx.fillText('🐱',10,300);
-  ctx.fillText('🐱',300,550);
+  ctx.fillText('🐱',300,700);
 }
 
 function frame(x,y,w,h){
@@ -164,42 +166,62 @@ function frame(x,y,w,h){
   ctx.setLineDash([]);
 }
 
-function crop(dx,dy,dw,dh){
-  const vw=video.videoWidth;
-  const vh=video.videoHeight;
-  const r=dw/dh;
-  const vr=vw/vh;
-  let sx,sy,sw,sh;
+function cropCenter(dx,dy,dw,dh){
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
 
-  if(vr>r){ sh=vh; sw=vh*r; sx=(vw-sw)/2; sy=0; }
-  else{ sw=vw; sh=vw/r; sx=0; sy=(vh-sh)/2; }
+  const videoRatio = vw / vh;
+  const frameRatio = dw / dh;
 
-  ctx.drawImage(video,sx,sy,sw,sh,dx,dy,dw,dh);
+  let sx, sy, sw, sh;
+
+  if(videoRatio > frameRatio){
+    sh = vh;
+    sw = vh * frameRatio;
+    sx = (vw - sw) / 2;
+    sy = 0;
+  } else {
+    sw = vw;
+    sh = vw / frameRatio;
+    sx = 0;
+    sy = (vh - sh) / 2;
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  ctx.drawImage(video, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
 async function takePhotos(){
   drawBackground();
 
-  let y=60;
+  const frameWidth = 200;
+  const frameHeight = 260;
+  const gap = 20;
 
-  for(let i=0;i<3;i++){   // 🔥 jadi 3 foto
+  const centerX = (canvas.width - frameWidth) / 2;
+
+  let y = 40;
+
+  for(let i=0;i<3;i++){
     for(let c=3;c>0;c--){
       counter.innerText=c;
       await delay(600);
     }
 
-    frame(40,y,280,160);      // 🔥 portrait (lebih tinggi)
-    crop(50,y+10,260,140);    // 🔥 isi portrait
+    frame(centerX, y, frameWidth, frameHeight);
+    cropCenter(centerX+10, y+10, frameWidth-20, frameHeight-20);
 
-    y+=180;
+    y += frameHeight + gap;
   }
 
   ctx.fillStyle='white';
   ctx.font='16px Arial';
-  ctx.fillText('— Smile • Pose • Click —',70,620);
+  ctx.textAlign='center';
+  ctx.fillText('— Smile • Pose • Click —', canvas.width/2, canvas.height-20);
 }
 
-// 🔥 tombol download
 function download(){
   const link=document.createElement('a');
   link.download='photobooth.png';
