@@ -90,6 +90,7 @@ video{
 
 .start{ background:#ff6fa3; color:white; }
 .reset{ background:#eee; }
+.download{ background:#4CAF50; color:white; }
 
 canvas{
   width:100%;
@@ -116,12 +117,12 @@ canvas{
     <div>1<br>Foto</div>
     <div>2<br>Foto</div>
     <div>3<br>Foto</div>
-    <div>4<br>Foto</div>
   </div>
 
   <div class="btn-group">
     <button class="btn start" onclick="takePhotos()">📸 MULAI</button>
     <button class="btn reset" onclick="location.reload()">🔄 RESET</button>
+    <button class="btn download" onclick="download()">⬇️ SIMPAN</button>
   </div>
 
   <canvas id="canvas" width="360" height="640"></canvas>
@@ -145,7 +146,6 @@ function drawBackground(){
   ctx.fillStyle=g;
   ctx.fillRect(0,0,360,640);
 
-  // dekor bunga & kucing (emoji simulasi)
   ctx.font='20px Arial';
   ctx.fillText('🌸',10,80);
   ctx.fillText('🌸',320,150);
@@ -182,21 +182,29 @@ async function takePhotos(){
 
   let y=60;
 
-  for(let i=0;i<4;i++){
+  for(let i=0;i<3;i++){   // 🔥 jadi 3 foto
     for(let c=3;c>0;c--){
       counter.innerText=c;
       await delay(600);
     }
 
-    frame(40,y,280,120);
-    crop(50,y+10,260,100);
+    frame(40,y,280,160);      // 🔥 portrait (lebih tinggi)
+    crop(50,y+10,260,140);    // 🔥 isi portrait
 
-    y+=140;
+    y+=180;
   }
 
   ctx.fillStyle='white';
   ctx.font='16px Arial';
   ctx.fillText('— Smile • Pose • Click —',70,620);
+}
+
+// 🔥 tombol download
+function download(){
+  const link=document.createElement('a');
+  link.download='photobooth.png';
+  link.href=canvas.toDataURL();
+  link.click();
 }
 </script>
 
