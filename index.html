@@ -3,152 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Photobooth Kawaii Pink (HP Fix)</title>
+<title>Photobooth Korea Style</title>
 
 <style>
-body {
-  font-family: Arial;
-  text-align: center;
-  background: #111;
-  margin: 0;
+body{
+  margin:0;
+  font-family: 'Poppins', sans-serif;
+  background:#f3d6dd;
+  display:flex;
+  justify-content:center;
 }
 
-video {
-  width: 100%;
-  height: 70vh;
-  object-fit: cover;
-  border-radius: 0 0 20px 20px;
-  transform: scaleX(-1); /* mirror seperti kamera HP */
+.container{
+  width:360px;
+  background:linear-gradient(180deg,#ffd1dc,#ff9ecf);
+  border-radius:25px;
+  padding:15px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.2);
 }
 
-.controls {
-  margin-top: -20px;
-  padding: 10px;
+.title{
+  text-align:center;
+  font-size:36px;
+  font-weight:800;
+  color:#ff4f87;
+  margin-bottom:10px;
+  text-shadow:2px 2px white;
 }
 
-button {
-  margin: 5px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 20px;
-  background: hotpink;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
+.video-box{
+  background:#ddd;
+  border-radius:20px;
+  overflow:hidden;
 }
 
-canvas {
-  width: 90%;
-  max-width: 420px;
-  margin-top: 15px;
-  border-radius: 20px;
+video{
+  width:100%;
+  height:280px;
+  object-fit:cover;
 }
+
+.status{
+  text-align:center;
+  margin:10px 0;
+  color:#444;
+}
+
+.counter{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  border:3px dashed #ff6fa3;
+  margin:10px auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:36px;
+  color:#ff6fa3;
+  background:white;
+}
+
+.steps{
+  display:flex;
+  justify-content:space-between;
+  margin:10px 0;
+}
+
+.steps div{
+  font-size:12px;
+  color:#888;
+}
+
+.btn-group{
+  display:flex;
+  justify-content:space-between;
+}
+
+.btn{
+  flex:1;
+  margin:5px;
+  padding:12px;
+  border:none;
+  border-radius:20px;
+  font-weight:bold;
+}
+
+.start{ background:#ff6fa3; color:white; }
+.reset{ background:#eee; }
+
+canvas{
+  width:100%;
+  margin-top:15px;
+  border-radius:20px;
+}
+
 </style>
 </head>
-
 <body>
 
-<h2 style="color:white">💖 Photobooth Kawaii 💖</h2>
+<div class="container">
+  <div class="title">Photobooth</div>
 
-<video id="video" autoplay playsinline></video>
+  <div class="video-box">
+    <video id="video" autoplay playsinline></video>
+  </div>
 
-<div class="controls">
-  <button onclick="takePhotos()">📸 Mulai</button>
-  <button onclick="download()">⬇️ Simpan</button>
+  <div class="status">Bersiap! Foto akan diambil dalam</div>
+
+  <div class="counter" id="count">3</div>
+
+  <div class="steps">
+    <div>1<br>Foto</div>
+    <div>2<br>Foto</div>
+    <div>3<br>Foto</div>
+    <div>4<br>Foto</div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn start" onclick="takePhotos()">📸 MULAI</button>
+    <button class="btn reset" onclick="location.reload()">🔄 RESET</button>
+  </div>
+
+  <canvas id="canvas" width="360" height="640"></canvas>
 </div>
-
-<canvas id="canvas" width="420" height="1100"></canvas>
 
 <script>
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+const counter = document.getElementById('count');
 
-navigator.mediaDevices.getUserMedia({
-  video: { facingMode: "user" }
-}).then(s => video.srcObject = s);
+navigator.mediaDevices.getUserMedia({ video:{ facingMode:"user" }})
+.then(s=>video.srcObject=s);
 
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
-function drawSticker(){
-  ctx.font="30px Arial";
-  ctx.fillText("🐱",10,150);
-  ctx.fillText("🐱",360,350);
-  ctx.fillText("🐱",10,700);
-  ctx.fillText("🌸",350,150);
-  ctx.fillText("🌸",20,450);
-  ctx.fillText("🌸",350,900);
+function drawBackground(){
+  let g = ctx.createLinearGradient(0,0,0,640);
+  g.addColorStop(0,'#ffc1d6');
+  g.addColorStop(1,'#ff8fb1');
+  ctx.fillStyle=g;
+  ctx.fillRect(0,0,360,640);
+
+  // dekor bunga & kucing (emoji simulasi)
+  ctx.font='20px Arial';
+  ctx.fillText('🌸',10,80);
+  ctx.fillText('🌸',320,150);
+  ctx.fillText('🐱',10,300);
+  ctx.fillText('🐱',300,550);
 }
 
-// fungsi crop center biar tidak peyok
-function drawCenterCrop(img, x, y, w, h) {
-  const vw = img.videoWidth;
-  const vh = img.videoHeight;
+function frame(x,y,w,h){
+  ctx.fillStyle='white';
+  ctx.fillRect(x,y,w,h);
 
-  const targetRatio = w / h;
-  const videoRatio = vw / vh;
+  ctx.strokeStyle='#ff6fa3';
+  ctx.lineWidth=3;
+  ctx.setLineDash([6,4]);
+  ctx.strokeRect(x,y,w,h);
+  ctx.setLineDash([]);
+}
 
-  let sx, sy, sw, sh;
+function crop(dx,dy,dw,dh){
+  const vw=video.videoWidth;
+  const vh=video.videoHeight;
+  const r=dw/dh;
+  const vr=vw/vh;
+  let sx,sy,sw,sh;
 
-  if (videoRatio > targetRatio) {
-    // video lebih lebar → crop kiri kanan
-    sh = vh;
-    sw = vh * targetRatio;
-    sx = (vw - sw) / 2;
-    sy = 0;
-  } else {
-    // video lebih tinggi → crop atas bawah
-    sw = vw;
-    sh = vw / targetRatio;
-    sx = 0;
-    sy = (vh - sh) / 2;
-  }
+  if(vr>r){ sh=vh; sw=vh*r; sx=(vw-sw)/2; sy=0; }
+  else{ sw=vw; sh=vw/r; sx=0; sy=(vh-sh)/2; }
 
-  // mirror hasil supaya sama dengan preview
-  ctx.save();
-  ctx.translate(x + w, y);
-  ctx.scale(-1, 1);
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
-  ctx.restore();
+  ctx.drawImage(video,sx,sy,sw,sh,dx,dy,dw,dh);
 }
 
 async function takePhotos(){
-  let grad = ctx.createLinearGradient(0,0,0,1100);
-  grad.addColorStop(0,"#ff9ecf");
-  grad.addColorStop(1,"#ffc0cb");
-  ctx.fillStyle=grad;
-  ctx.fillRect(0,0,420,1100);
+  drawBackground();
 
-  ctx.fillStyle="white";
-  ctx.font="bold 40px Arial";
-  ctx.fillText("Photobooth",90,50);
+  let y=60;
 
-  for(let i=0;i<3;i++){
-    await delay(2000);
+  for(let i=0;i<4;i++){
+    for(let c=3;c>0;c--){
+      counter.innerText=c;
+      await delay(600);
+    }
 
-    ctx.fillStyle="white";
-    ctx.fillRect(30,80+i*330,360,300);
+    frame(40,y,280,120);
+    crop(50,y+10,260,100);
 
-    ctx.lineWidth=18;
-    ctx.strokeStyle="#ff69b4";
-    ctx.strokeRect(30,80+i*330,360,300);
-
-    // pakai crop center (tidak miring / peyok)
-    drawCenterCrop(video,70,110+i*330,280,240);
+    y+=140;
   }
 
-  drawSticker();
-
-  ctx.fillStyle="white";
-  ctx.font="20px Arial";
-  ctx.fillText("Smile • Pose • Click",80,1050);
-}
-
-function download(){
-  let link=document.createElement('a');
-  link.download='photobooth-fix.png';
-  link.href=canvas.toDataURL();
-  link.click();
+  ctx.fillStyle='white';
+  ctx.font='16px Arial';
+  ctx.fillText('— Smile • Pose • Click —',70,620);
 }
 </script>
 
