@@ -97,9 +97,9 @@ canvas{
   margin-top:15px;
   border-radius:20px;
 }
-
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -139,6 +139,7 @@ navigator.mediaDevices.getUserMedia({ video:{ facingMode:"user" }})
 
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
+// background + stiker
 function drawBackground(){
   let g = ctx.createLinearGradient(0,0,0,640);
   g.addColorStop(0,'#ffc1d6');
@@ -153,6 +154,7 @@ function drawBackground(){
   ctx.fillText('🐱',300,550);
 }
 
+// bingkai
 function frame(x,y,w,h){
   ctx.fillStyle='white';
   ctx.fillRect(x,y,w,h);
@@ -164,34 +166,49 @@ function frame(x,y,w,h){
   ctx.setLineDash([]);
 }
 
+// 🔥 crop portrait (FIX UTAMA)
 function crop(dx,dy,dw,dh){
-  const vw=video.videoWidth;
-  const vh=video.videoHeight;
-  const r=dw/dh;
-  const vr=vw/vh;
-  let sx,sy,sw,sh;
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
 
-  if(vr>r){ sh=vh; sw=vh*r; sx=(vw-sw)/2; sy=0; }
-  else{ sw=vw; sh=vw/r; sx=0; sy=(vh-sh)/2; }
+  const targetRatio = 2/3; // portrait tinggi
 
-  ctx.drawImage(video,sx,sy,sw,sh,dx,dy,dw,dh);
+  let sx, sy, sw, sh;
+  const videoRatio = vw / vh;
+
+  if(videoRatio > targetRatio){
+    sh = vh;
+    sw = vh * targetRatio;
+    sx = (vw - sw) / 2;
+    sy = 0;
+  } else {
+    sw = vw;
+    sh = vw / targetRatio;
+    sx = 0;
+    sy = (vh - sh) / 2;
+  }
+
+  ctx.drawImage(video, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
 async function takePhotos(){
   drawBackground();
 
-  let y=60;
+  let y = 40;
 
-  for(let i=0;i<3;i++){   // 🔥 jadi 3 foto
+  for(let i=0;i<3;i++){
     for(let c=3;c>0;c--){
       counter.innerText=c;
       await delay(600);
     }
 
-    frame(40,y,280,160);      // 🔥 portrait (lebih tinggi)
-    crop(50,y+10,260,140);    // 🔥 isi portrait
+    // 🔥 frame portrait tinggi
+    frame(40,y,280,200);
 
-    y+=180;
+    // 🔥 isi portrait
+    crop(50,y+10,260,180);
+
+    y += 210;
   }
 
   ctx.fillStyle='white';
@@ -199,7 +216,7 @@ async function takePhotos(){
   ctx.fillText('— Smile • Pose • Click —',70,620);
 }
 
-// 🔥 tombol download
+// download
 function download(){
   const link=document.createElement('a');
   link.download='photobooth.png';
