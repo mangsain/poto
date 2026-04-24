@@ -2,24 +2,65 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Photobooth Kawaii Pink (Portrait)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photobooth Kawaii Pink (HP)</title>
+
 <style>
-body { font-family: Arial; text-align: center; background: #111; }
-video { border-radius: 15px; margin-top:10px; object-fit: cover; }
-canvas { margin-top:20px; border-radius:20px; }
-button { margin:10px; padding:10px 20px; border:none; border-radius:10px; background:pink; font-weight:bold; }
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #111;
+  margin: 0;
+}
+
+/* VIDEO FULL HP */
+video {
+  width: 100%;
+  height: 70vh;
+  object-fit: cover;
+  border-radius: 0 0 20px 20px;
+}
+
+/* CONTAINER TOMBOL DEKAT VIDEO */
+.controls {
+  margin-top: -20px;
+  padding: 10px;
+}
+
+/* TOMBOL */
+button {
+  margin: 5px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 20px;
+  background: hotpink;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* CANVAS */
+canvas {
+  width: 90%;
+  max-width: 420px;
+  margin-top: 15px;
+  border-radius: 20px;
+}
 </style>
 </head>
+
 <body>
 
-<h2 style="color:white">💖 Photobooth rinduy 💖</h2>
+<h2 style="color:white">💖 Photobooth Kawaii 💖</h2>
 
-<!-- Portrait camera -->
-<video id="video" width="300" height="400" autoplay playsinline></video><br>
-<button onclick="takePhotos()">Mulai</button>
-<button onclick="download()">Download</button>
+<video id="video" autoplay playsinline></video>
 
-<!-- Canvas lebih tinggi -->
+<!-- tombol nempel bawah kamera -->
+<div class="controls">
+  <button onclick="takePhotos()">📸 Mulai</button>
+  <button onclick="download()">⬇️ Simpan</button>
+</div>
+
 <canvas id="canvas" width="420" height="1100"></canvas>
 
 <script>
@@ -27,13 +68,8 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-// paksa portrait
 navigator.mediaDevices.getUserMedia({
-  video: {
-    facingMode: "user",
-    width: { ideal: 720 },
-    height: { ideal: 1280 }
-  }
+  video: { facingMode: "user" }
 }).then(s => video.srcObject = s);
 
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -62,7 +98,6 @@ async function takePhotos(){
   for(let i=0;i<3;i++){
     await delay(2000);
 
-    // frame besar portrait
     ctx.fillStyle="white";
     ctx.fillRect(30,80+i*330,360,300);
 
@@ -70,7 +105,6 @@ async function takePhotos(){
     ctx.strokeStyle="#ff69b4";
     ctx.strokeRect(30,80+i*330,360,300);
 
-    // foto portrait (lebih tinggi)
     ctx.drawImage(video,70,110+i*330,280,240);
   }
 
